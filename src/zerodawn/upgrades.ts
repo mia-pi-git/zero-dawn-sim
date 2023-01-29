@@ -35,4 +35,46 @@ export const upgrades: Upgrade[] = [
             state.newCauldronCapacity = 2;
         },
     },
+    {
+        name: "Cauldron Capacity++",
+        desc: "Allow each Cauldron to make three machines at a time.",
+        price: {materials: 600, energy: 600, showDiff: 100},
+        requires: ['Cauldron Capacity+'],
+        onPurchase: state => {
+            for (const c of state.cauldrons) {
+                c.capacity = 3;
+            }
+            state.newCauldronCapacity = 3;
+        },
+    },
+    {
+        name: "Cauldron Capacity+++",
+        desc: "Allow each Cauldron to make four machines at a time.",
+        price: {materials: 1000, energy: 1000, showDiff: 100},
+        requires: ['Cauldron Capacity+'],
+        onPurchase: state => {
+            for (const c of state.cauldrons) {
+                c.capacity = 4;
+            }
+            state.newCauldronCapacity = 4;
+        },
+    },
+
+    {
+        name: "More Efficient Harvesting",
+        desc: "Use 10% less terraformed land when harvesting power/materials.",
+        price: {materials: 800, energy: 800, showDiff: 200},
+        onPurchase: state => {
+            state.landUseRate = 2.2;
+        },
+    },
+    {
+        name: "More Efficient Harvesting+",
+        desc: "Use 20% less terraformed land when harvesting power/materials.",
+        price: {materials: 1400, energy: 1400, showDiff: 200},
+        requires: ['More Efficient Harvesting'],
+        onPurchase: state => {
+            state.landUseRate = 2.45;
+        },
+    },
 ];

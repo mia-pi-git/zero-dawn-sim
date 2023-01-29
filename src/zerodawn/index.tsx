@@ -7,9 +7,6 @@ import {Tutorial} from './tutorial.js';
 
 declare const React: typeof window.React;
 
-// part of this should be balancing how much humans attack convoys 
-// - use combat machines for defence
-
 interface Cauldron {
     name: string;
     // either empty, or the [machine, time creation started][]
@@ -35,6 +32,7 @@ export const GameData = new class {
         }] as Cauldron[],
         newCauldronCapacity: 1,
         totalAvailableMaterials: 200,
+        landUseRate: 2,
         power: 100,
         noticed: false,
         lastTickConsumption: {
@@ -58,6 +56,7 @@ export const GameData = new class {
         currentSearchedMachine: null as null | string,
         currentOpenCauldron: 'Alpha',
         currentOpenMachineType: 'acquisition',
+        currentMaterialInputValue: null as null | string,
         // [machine, cauldron to, start date, total amount, cauldronFrom, resolver?]
         transports: [] as [string, Cauldron, number, number, string][],
         currentBuff: null as {machine: string, time: number, count: number} | null,
@@ -313,12 +312,12 @@ export class App extends React.Component {
                         this.state.landRestored = 0;
                         break;
                     }
-                    landUsed += (data.outputRate.power / 2);
+                    landUsed += (data.outputRate.power / this.state.landUseRate);
                     totalMaterials += (data.outputRate.materials * this.calculateBuff());
                     totalEnergy += data.outputRate.power;
                     spentPower += data.powerConsumption;
 
-                    this.state.landRestored -= (data.outputRate.power / 2);
+                    this.state.landRestored -= (data.outputRate.power / this.state.landUseRate);
                     this.state.power += data.outputRate.power;
                     this.state.materials += (data.outputRate.materials * this.calculateBuff());
                     this.state.totalAvailableMaterials += (data.outputRate.materials * this.calculateBuff());
@@ -549,13 +548,14 @@ export class App extends React.Component {
     }
 
     cauldronInputKeyDown(
-        cauldron: Cauldron, event: React.KeyboardEvent<HTMLElement>, type: '+' | '-'
+        cauldron: Cauldron, event: React.KeyboardEvent<HTMLInputElement>, type: '+' | '-'
     ) {
+        // this.state.currentMaterialInputValue = event.currentTarget.value;
         if (event.keyCode !== 13) {
             return;
         }
-        let num = parseInt((event.currentTarget as any).value);
-        (event.currentTarget as any).value = '';
+        let num = parseInt(event.currentTarget.value);
+        event.currentTarget.value = '';
         if (isNaN(num)) {
             alert(`Invalid number of materials to move.`);
             return;
@@ -634,7 +634,8 @@ export class App extends React.Component {
             Material reserves: {c.materials ||= 0}T
             <br />
             Current tasks: {c.busy?.length ? join(c.busy.map(z => this.renderCauldronTask(z)), <br />) : "None"}<br />
-            Add materials: <input size={8} onKeyDown={e => this.cauldronInputKeyDown(c, e, '+')}/><br />
+            Add materials: <input size={8} onKeyDown={e => this.cauldronInputKeyDown(c, e, '+')}/><Space />
+            <small>(click Enter to deploy changes)</small><br />
             Remove materials: <input size={8} onKeyDown={e => this.cauldronInputKeyDown(c, e, '-')} />
             {sortedTransports.length ? <><br />Resource movements: <br />{join(sortedTransports, <br />)}</> : <></>}
         </li>;
@@ -785,7 +786,7 @@ export class App extends React.Component {
         const style = !this.canPurchaseUpgrade(upgrade) ? {backgroundColor: 'grey'} : {}
         return <div style={style} className="infobox" onClick={() => this.purchaseUpgrade(upgrade)}>
             <strong>{upgrade.name}</strong><br />
-            {upgrade.desc}
+            {upgrade.desc} {upgrade.price ? `Costs: ${upgrade.price.energy} energy, ${upgrade.price.materials} materials` : ``}
         </div>;
     }
 
@@ -881,25 +882,46 @@ export class App extends React.Component {
         </>;
     }
 
+    tryReset() {
+        const out = prompt("Are you sure you want to reset your game? Type 'yes' to confirm.");
+        if (toID(out) === 'yes') {
+            this.state = GameData.DEFAULT_STATE;
+            this.save();
+            this.forceUpdate();
+        }
+    }
+
+    renderMiscButtons() {
+        return <>
+            <button onClick={() => { this.state.tutorialOpen = true; this.forceUpdate(); }}>Reread tutorial information.</button>
+            <Space />
+            <button onClick={() => this.tryReset()}>Reset game</button>
+        </>
+    }
+
+    renderResourcePanel() {
+        return <>
+            Power reserves: {this.state.power.toFixed(2)}GW<br />
+            Unallocated material reserves: {this.state.materials.toFixed(2)}T<br />
+            Total material reserves: {this.state.totalAvailableMaterials.toFixed(2)}T<br />
+            Land terraformed: {this.state.landRestored.toFixed(2)} KM^2 
+        </>
+    }
+
     render() {
         if (this.state.tutorialOpen) {
             return <Tutorial />;
         }
         return <>
             {renderAsTable([
-                <>
-                    Power reserves: {this.state.power.toFixed(2)}GW<br />
-                    Unallocated material reserves: {this.state.materials.toFixed(2)}T<br />
-                    Total material reserves: {this.state.totalAvailableMaterials.toFixed(2)}T<br />
-                    Land terraformed: {this.state.landRestored.toFixed(2)} KM^2 
-                </>,
+               this.renderResourcePanel(),
                 this.renderMachineAllocator(),         
                 this.renderLastTickStatsPanel(),
                 this.renderCauldronPanel(),
                 this.renderMachinePurchasePanel(),
                 this.renderSearchPanel(),
                 this.renderUpgradePanel(),
-                <button onClick={() => { this.state.tutorialOpen = true; this.forceUpdate(); }}>Reread tutorial information.</button>
+                this.renderMiscButtons(),
             ])}
             <div className="footer">
                 <hr />
