@@ -1,0 +1,6 @@
+{
+	"dependencies": {},
+	"scripts": {
+		"build": "npx tsc && node build/index.js"
+	}
+}

@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "lib": ["dom", "es2020"],
+    "target": "es6",
+    "strict": true,
+    "checkJs": true,
+    "outDir": "./public/",
+    "incremental": true,
+    "jsx": "react",
+    "allowUnreachableCode": false,
+    "esModuleInterop": true,
+    "noImplicitAny": true,
+    "skipLibCheck": true,
+  },
+  "include": [
+    "./src/**/*",
+  ],
+  "exclude": ["./public/js/**/*"],
+}

@@ -1,0 +1,28 @@
+<head>
+    <title>{{title}}</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <style>
+        .infobox {
+            border: 1px solid #6688AA;
+            padding: 2px 4px;
+        }
+        .footer {
+            bottom: 0px;
+        }
+    </style>
+    <meta name="description" content="{{description}}">
+</head>
+<body>
+    <center>
+        <h2>{{header}}</h2>
+        <div id="root"></div>
+    </center>
+    <script type="module">
+        import * as app from './index.js?{{version}}';
+        window.app = app;
+        const container = document.getElementById('root');
+        const root = ReactDOM.createRoot(container);
+        root.render(React.createElement(app.App));
+    </script>
+</body>
