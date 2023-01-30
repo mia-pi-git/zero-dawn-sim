@@ -98,11 +98,11 @@ function isMobile() {
 function renderAsTable(els: React.ReactElement[]) {
     const out = [];
     if (isMobile()) {
-        return <table>{els.map(el => <tr><td className="infobox">{el}</td></tr>)}</table>
+        return <table>{els.map(el => <tr><td className="infobox" width={"50%"}>{el}</td></tr>)}</table>
     } else {
         let curEl = [];
         for (const el of els) {
-            curEl.push(<td className="infobox">{el}</td>);
+            curEl.push(<td className="infobox" width={"50%"}>{el}</td>);
             if (curEl.length === 2) {
                 out.push(<tr>{curEl}</tr>);
                 curEl = [];
