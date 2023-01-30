@@ -11,7 +11,7 @@ export interface Upgrade {
     desc: string;
     requires?: string[];
     price?: {materials: number, energy: number, showDiff?: number};
-    canPurchase?: (state: State) => boolean;
+    canPurchase?: (state: State, data: Data) => boolean;
     onPurchase?: (state: State) => void;
     shouldDisplay?: (state: State) => boolean;
     onStartup?: (state: State, data: Data) => void;
@@ -112,6 +112,66 @@ export const upgrades: Upgrade[] = [
             for (const k in data.MACHINES) {
                 const m = data.MACHINES[k];
                 m.creationTime -= (0.10 * m.creationTime);
+            }
+        },
+    },
+
+    {
+        name: "Top it Off",
+        desc: "Ensure all Cauldrons always have at least 100 materials.",
+        price: {materials: 500, energy: 100},
+        canPurchase: (state, data) =>  (
+            Object.keys(state.machines)
+                .filter(z => state.machines[z])
+                .some(z => data.MACHINES[z].type === 'transport')
+        ),
+        onLoop: (state, data, app) => {
+            for (const c of state.cauldrons) {
+                if (c.materials < 100) {
+                    if (app.batchTransfer(100, c) === null) {
+                        return;
+                    }
+                }
+            }
+        },
+    },
+    {
+        name: "Top it Off+",
+        desc: "Ensure all Cauldrons always have at least 500 materials.",
+        requires: ['Top it Off'],
+        price: {materials: 1500, energy: 1500, showDiff: 500},
+        canPurchase: (state, data) =>  (
+            Object.keys(state.machines)
+                .filter(z => state.machines[z])
+                .some(z => data.MACHINES[z].type === 'transport')
+        ),
+        onLoop: (state, data, app) => {
+            for (const c of state.cauldrons) {
+                if (c.materials < 500) {
+                    if (app.batchTransfer(500, c) === null) {
+                        return;
+                    }
+                }
+            }
+        },
+    },
+    {
+        name: "Top it Off++",
+        desc: "Ensure all Cauldrons always have at least 1000 materials.",
+        requires: ['Top it Off+'],
+        price: {materials: 4000, energy: 4000, showDiff: 1000},
+        canPurchase: (state, data) =>  (
+            Object.keys(state.machines)
+                .filter(z => state.machines[z])
+                .some(z => data.MACHINES[z].type === 'transport')
+        ),
+        onLoop: (state, data, app) => {
+            for (const c of state.cauldrons) {
+                if (c.materials < 1000) {
+                    if (app.batchTransfer(1000, c) === null) {
+                        return;
+                    }
+                }
             }
         },
     },

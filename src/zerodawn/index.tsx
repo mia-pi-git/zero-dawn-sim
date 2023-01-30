@@ -641,39 +641,7 @@ export class App extends React.Component {
 
         switch (type) {
         case '+':
-            // find all available transports, divvy up the materials, send them out
-            while (num) {
-                let machine: [string, Machine] | null = null;
-                const transports = sortBy(
-                    Object.keys(this.state.machines)
-                        .filter(z => GameData.MACHINES[z].type === 'transport'),
-                    // @ts-ignore guaranteed to have it by above filter
-                    a => -GameData.MACHINES[a].carryingCapacity
-                );
-                for (const k of transports) {
-                    if (this.state.busy[k]?.length < this.state.machines[k]) {
-                        machine = [k, GameData.MACHINES[k]];
-                        // breaking here means highest capacity machines come first
-                        break;
-                    }
-                }
-                if (!machine) {
-                    return alert(`No more transport machines available, ${num} materials cannot be sent.`);
-                }
-                // @ts-ignore
-                let amount = num > machine[1].carryingCapacity ? machine[1].carryingCapacity : num;
-                num -= amount;
-                this.state.materials -= amount;
-                if (this.state.materials < 0) {
-                    num += Math.abs(this.state.materials);
-                    this.state.materials = 0;
-                    return alert(`Main material reserve is empty. ${num} materials could not be moved.`);
-                }
-                this.state.transports.push([
-                    machine[0], cauldron, Date.now(), amount, 'main reserve',
-                ]);
-                (this.state.busy[machine[0]] ||= []).push('transporting');
-            }
+            this.batchTransfer(num, cauldron);
             break;
         case '-':
             if ((cauldron.materials - num) < 0) {
@@ -688,6 +656,45 @@ export class App extends React.Component {
             break;
         }
         (event.currentTarget as any).value = '';
+    }
+
+    batchTransfer(amount: number, cauldron: Cauldron, silent = false) {
+        let num = amount;
+        // find all available transports, divvy up the materials, send them out
+        while (num) {
+            let machine: [string, Machine] | null = null;
+            const transports = sortBy(
+                Object.keys(this.state.machines)
+                    .filter(z => GameData.MACHINES[z].type === 'transport'),
+                // @ts-ignore guaranteed to have it by above filter
+                a => -GameData.MACHINES[a].carryingCapacity
+            );
+            for (const k of transports) {
+                if (this.state.busy[k]?.length < this.state.machines[k]) {
+                    machine = [k, GameData.MACHINES[k]];
+                    // breaking here means highest capacity machines come first
+                    break;
+                }
+            }
+            if (!machine) {
+                if (silent) return null;
+                return alert(`No more transport machines available, ${num} materials cannot be sent.`);
+            }
+            // @ts-ignore
+            let amount = num > machine[1].carryingCapacity ? machine[1].carryingCapacity : num;
+            num -= amount;
+            this.state.materials -= amount;
+            if (this.state.materials < 0) {
+                num += Math.abs(this.state.materials);
+                this.state.materials = 0;
+                return alert(`Main material reserve is empty. ${num} materials could not be moved.`);
+            }
+            this.state.transports.push([
+                machine[0], cauldron, Date.now(), amount, 'main reserve',
+            ]);
+            (this.state.busy[machine[0]] ||= []).push('transporting');
+        }
+        return true;
     }
 
     makeProgressBar(startDate: number, endDate: number) {
@@ -810,7 +817,7 @@ export class App extends React.Component {
     }
 
     purchaseUpgrade(upgrade: Upgrade) {
-        if (upgrade.canPurchase && !upgrade.canPurchase(state)) return;
+        if (upgrade.canPurchase && !upgrade.canPurchase(state, GameData)) return;
         if (upgrade.price) {
             const {materials, energy} = upgrade.price;
             if (materials > this.state.materials || energy > this.state.power) {
@@ -832,7 +839,7 @@ export class App extends React.Component {
             if (!upgrade.requires.every(z => this.state.upgrades?.includes(z))) return false;
         }
         if (upgrade.canPurchase) {
-            if (!upgrade.canPurchase(this.state)) return false;
+            if (!upgrade.canPurchase(this.state, GameData)) return false;
         }
         if (upgrade.price) {
             const {materials, energy} = upgrade.price;
