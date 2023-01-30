@@ -4,11 +4,13 @@ export class Tutorial extends React.Component {
     /** This is horrible but let me be */
     close() {
         const app = (window as any).app as typeof import('./index');
-        app.state.tutorialOpen = false; 
-        app.Manager.get().forceUpdate(); 
+        app.Manager.fade(['0.85', '0.8', '0.6', '0.4', '0.2', '0.0']).then(() => {
+            app.state.tutorialOpen = false; 
+            app.Manager.get().forceUpdate(); 
+        });
     }
     render() {
-        return <>
+        return <div className="infobox">
             Greetings.<br />
             As you probably know, your task is to deactivate the Faro Plague and restore the world's biosphere.<br />
             The Faro Plague has been deactivated, courtesy of MINERVA, so now comes the second task.<br />
@@ -21,6 +23,6 @@ export class Tutorial extends React.Component {
             - Recon machines scout out land, and have a chance to spot particularly rich pieces of land, which will improve the output of acquisition machines harvesting said land.<br />
             Good luck to you!<br />
             <button onClick={() => this.close()}>Start!</button>
-        </>;
+        </div>;
     }
 }

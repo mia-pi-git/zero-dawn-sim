@@ -7,13 +7,29 @@
     <link rel="icon" href="{{site_base}}/favicon.ico" type="image/x-icon" />
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- other text-shadow option: `#79AAD9 1px 0 10px;`-->
     <style>
         .infobox {
             border: 1px solid #6688AA;
             padding: 2px 4px;
+            border-radius: 10px;
+            text-shadow: 1px 1px 2px #B993E3, 0 0 1em #956BC8, 0 0 0.4em #9B60C7;
+            box-shadow: inset 0px -20px 50px 10px #534CB2, 0px 0px 30px 6px #5544A5;
+            background-color: #9C68CC;
+            opacity: 0.8;
         }
         .footer {
             bottom: 0px;
+        }
+        body {
+            background: url("{{site_base}}/background.png");
+            color: white;
+            font-family: Courier New;
+            font-size: 13px;
+        }
+        .number {
+            text-shadow: 1px 1px 2px #86B1E0, 0 0 1em #6D98CA, 0 0 0.4em #6D78C0;
+            color: #90BEF1;
         }
     </style>
     <meta name="description" content="{{description}}">

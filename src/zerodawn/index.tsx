@@ -82,6 +82,10 @@ export const GameData = new class {
     }
 };
 
+function upper(str: string) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 function join(els: React.ReactElement[], val: React.ReactElement) {
     const out = [];
     for (const el of els) {
@@ -98,13 +102,17 @@ function isMobile() {
 function renderAsTable(els: React.ReactElement[]) {
     const out = [];
     if (isMobile()) {
-        return <table>{els.map(el => <tr><td className="infobox" width={"50%"}>{el}</td></tr>)}</table>
+        return <table width={"100%"}>{
+            els.map(el => <tr><td className="infobox" width={"25%"}>{el}</td></tr>)
+        }</table>
     } else {
         let curEl = [];
         for (const el of els) {
-            curEl.push(<td className="infobox" width={"50%"}>{el}</td>);
+            curEl.push(<td className="infobox" width={"25%"}>{el}</td>);
             if (curEl.length === 2) {
-                out.push(<tr>{curEl}</tr>);
+                const buffer = <td width={"5%"}></td>;
+                out.push(<tr>{[buffer, curEl[0], buffer, curEl[1], buffer]}</tr>);
+                out.push(<tr><td height={"5%"}><br /></td></tr>);
                 curEl = [];
             }
         }
@@ -151,6 +159,12 @@ export class Space extends React.Component {
     }
 }
 
+export class Value extends React.Component<{children: any}> {
+    render() {
+        return <span className="number">{this.props.children}</span>
+    }
+}
+
 export class CauldronButtons extends React.Component {
     render() {
         const out = [];
@@ -178,7 +192,7 @@ export class MachineButtons extends React.Component {
             <button 
                 disabled={state.currentOpenMachineType === type}
                 onClick={() => { state.currentOpenMachineType = type; Manager.update()}}
-            >{type.charAt(0).toUpperCase() + type.slice(1)}</button>
+            >{upper(type)}</button>
         ));
     }
 }
@@ -203,6 +217,17 @@ export const Manager = new class {
 
     update() {
         this.panel.forceUpdate();
+    }
+
+    async fade(levels: string[], timeBetween = 100) {
+        const wait = () => new Promise(res => {
+            setTimeout(res, timeBetween);
+        });
+        for (const n of levels) {
+            // @ts-ignore
+            document.querySelectorAll('.infobox').forEach(e => e.style['opacity'] = n);
+            await wait();
+        }
     }
 }
 
@@ -401,7 +426,8 @@ export class App extends React.Component {
                 pop -= Math.round(Math.random() * (((pop * deathRate) + landUsed)));
                 pop += Math.round(Math.random() * ((pop * birthRate) + totalRestored));
 
-                if (Math.random() > 0.995 && pop > 50) {
+                // hard cap
+                if (Math.random() > 0.995 && pop > 50 && this.state.villages.length < 500) {
                     this.state.villages.push(Math.round(pop / 2));
                     pop = Math.floor(pop / 2);
                 }
@@ -450,7 +476,7 @@ export class App extends React.Component {
     machineButton(k: string) {
         const data = GameData.MACHINES[k];
         return <>
-            {data.name}: {this.state.machines[k]}<Space />
+            {data.name}: <Value>{this.state.machines[k]}</Value><Space />
             <button 
                 disabled={!this.canPurchase(k)} 
                 onClick={() => this.tryPurchase(k)}
@@ -467,7 +493,7 @@ export class App extends React.Component {
                 disabled={!this.canBreakDown(k)}
                 onClick={() => this.tryBreakDown(k)}
             >-</button><Space />
-            ({data.cost.energy} power, {data.cost.materials } materials, {data.creationTime}s)
+            ({data.cost.energy} power, {data.cost.materials} materials, {data.creationTime}s)
         </>;
     }
     purchaseUnlocked(machine: string) {
@@ -578,7 +604,7 @@ export class App extends React.Component {
             break;
         }
         return <>
-            {task.charAt(0).toUpperCase() + task.slice(1)}: ({this.countBusy(machine, task)})<Space />
+            {upper(task)}: (<Value>{this.countBusy(machine, task)}</Value>)<Space />
             <button disabled={!canAllocate} onClick={allocate}> + </button><Space />
             <button disabled={!canDeallocate} onClick={deallocate}>-</button><Space />{addendum}
         </>;
@@ -682,8 +708,8 @@ export class App extends React.Component {
             </>;
         });
         return <li>
-            Cauldron {c.name}:<br />
-            Material reserves: {c.materials ||= 0}T
+            <Value>Cauldron {c.name}:</Value><br />
+            Material reserves: <Value>{c.materials ||= 0}T</Value>
             <br />
             Current tasks: {c.busy?.length ? join(c.busy.map(z => this.renderCauldronTask(z)), <br />) : "None"}<br />
             Add materials: <input size={8} onKeyDown={e => this.cauldronInputKeyDown(c, e, '+')}/><Space />
@@ -870,27 +896,27 @@ export class App extends React.Component {
         switch (m.type) {
         case 'acquisition':
             return <>
-                Output: {m.outputRate.power} power/sec, {m.outputRate.materials} materials/sec<br />
-                Terraform rate: {m.restoreRate}/sec
+                Output: <Value>{m.outputRate.power}</Value> power/sec, <Value>{m.outputRate.materials}</Value> materials/sec<br />
+                Terraform rate: <Value>{m.restoreRate}</Value>/sec
             </>;
         case 'recon':
             // 1 - 0.8 is 0.19999999999999996 because js, so this fixes that 
             // (and also makes it easily understood)
             const fixedChance = Math.round((1 - m.locationChance) * 100);
             return <>
-                Chance to temporarily buff acquisition machines: {fixedChance}%<br />
-                Buff amount: {m.buffMultiplier}x power/sec and materials/sec<br />
-                Buff ends after {m.buffRange} machines are buffed or {m.buffDuration} seconds pass
+                Chance to temporarily buff acquisition machines: <Value>{fixedChance}</Value>%<br />
+                Buff amount: <Value>{m.buffMultiplier}x</Value> power/sec and materials/sec<br />
+                Buff ends after <Value>{m.buffRange}</Value> machines are buffed or <Value>{m.buffDuration}</Value> seconds pass
             </>
         case 'transport':
             return <>
-                Carrying capacity: {m.carryingCapacity}<br />
-                Transport duration: {m.transportSpeed}
+                Carrying capacity: <Value>{m.carryingCapacity}</Value><br />
+                Transport duration: <Value>{m.transportSpeed}</Value>
             </>;
         case 'combat':
             return <>
-                Attack: {m.attackPower}<br />
-                Power consumption during combat: {m.combatPowerConsumption}
+                Attack: <Value>{m.attackPower}</Value><br />
+                Power consumption during combat: <Value>{m.combatPowerConsumption}</Value>
             </>;
         }
     }
@@ -903,11 +929,11 @@ export class App extends React.Component {
                 Search machine data: <small>(type in a machine name to get its stats)</small><br />
                 <input onKeyDown={(ev) => this.handleSearchEvent(ev)} /><br />
                 <strong>{data.name}:</strong><br />
-                Power consumption: {data.powerConsumption}/sec<br />
-                Cost: {data.cost.energy} power, {data.cost.materials} materials<br />
-                Type: {data.type}<br />
-                Time to create: {data.creationTime} seconds<br />
-                Defense: {data.defense}<br />
+                Power consumption: <Value>{data.powerConsumption}</Value>/sec<br />
+                Cost: <Value>{data.cost.energy}</Value> power, <Value>{data.cost.materials}</Value> materials<br />
+                Type: <Value>{upper(data.type)}</Value><br />
+                Time to create: <Value>{data.creationTime}</Value> seconds<br />
+                Defense: <Value>{data.defense}</Value><br />
                 {this.renderMachineTypeDetails(data)}
             </>;
         }
@@ -924,12 +950,12 @@ export class App extends React.Component {
         return <>
             Per-second stats:
             <ul>
-                <li>Land restored: {stats.restored.toFixed(2)}</li>
-                <li>Land used for power: {stats.landUsed.toFixed(2)}</li>
-                <li>Power acquired: {stats.energy.toFixed(2)}</li>
-                <li>Power spent: {stats.powerSpent.toFixed(2)}</li>
-                <li>Materials acquired: {stats.materials.toFixed(2)}</li>
-                <li>Recon machine boost: {buff ? <>{buff}x ({stats.buff})</> : <>None</>}</li>
+                <li>Land restored: <Value>{stats.restored.toFixed(2)}</Value></li>
+                <li>Land used for power: <Value>{stats.landUsed.toFixed(2)}</Value></li>
+                <li>Power acquired: <Value>{stats.energy.toFixed(2)}</Value></li>
+                <li>Power spent: <Value>{stats.powerSpent.toFixed(2)}</Value></li>
+                <li>Materials acquired: <Value>{stats.materials.toFixed(2)}</Value></li>
+                <li>Recon machine boost: <Value>{buff ? <>{buff}x ({stats.buff})</> : <>None</>}</Value></li>
             </ul>
         </>;
     }
@@ -943,9 +969,16 @@ export class App extends React.Component {
         }
     }
 
+    openTutorial() {
+        return Manager.fade(['0.85', '0.8', '0.6', '0.4', '0.2', '0.0']).then(() => {
+            this.state.tutorialOpen = true;
+            this.forceUpdate();
+        });
+    }
+
     renderMiscButtons() {
         return <>
-            <button onClick={() => { this.state.tutorialOpen = true; this.forceUpdate(); }}>Reread tutorial information.</button>
+            <button onClick={() => this.openTutorial()}>Reread tutorial information.</button>
             <Space />
             <button onClick={() => this.tryReset()}>Reset game</button>
         </>
@@ -953,14 +986,14 @@ export class App extends React.Component {
 
     renderResourcePanel() {
         return <>
-            Power reserves: {this.state.power.toFixed(2)}GW<br />
-            Unallocated material reserves: {this.state.materials.toFixed(2)}T<br />
-            Total material reserves: {this.state.totalAvailableMaterials.toFixed(2)}T<br />
-            Land terraformed: {this.state.landRestored.toFixed(2)} KM^2
+            Power reserves: <Value>{this.state.power.toFixed(2)}GW</Value><br />
+            Unallocated material reserves: <Value>{this.state.materials.toFixed(2)}T</Value><br />
+            Total material reserves: <Value>{this.state.totalAvailableMaterials.toFixed(2)}T</Value><br />
+            Land terraformed: <Value>{this.state.landRestored.toFixed(2)} KM^2</Value>
             {this.state.humans ?
                 <>
-                    <br />World population: {this.state.humans}<br />
-                    Total settlements: {this.state.villages.length}
+                    <br />World population: <Value>{this.state.humans}</Value><br />
+                    Total settlements: <Value>{this.state.villages.length}</Value>
                 </> : <></>
             }
         </>
@@ -983,12 +1016,19 @@ export class App extends React.Component {
             ])}
             <div className="footer">
                 <hr />
-                Version 0.1
-                <Space />|<Space />
-                <a href="https://github.com/mia-pi-git/zero-dawn-sim">Source code</a>
-                <Space />|<Space />
-                <a href="https://www.tumblr.com/mia-is-pi">Contact site owner</a>
+                <button>
+                    Version: 0.2
+                    <Space />|<Space />
+                    <a href="https://github.com/mia-pi-git/zero-dawn-sim">Source code</a>
+                    <Space />|<Space />
+                    <a href="https://www.tumblr.com/mia-is-pi">Contact site owner</a>
+                </button>
             </div>
         </>;
     }
 }
+
+// animate!
+setTimeout(() => {
+    void Manager.fade(['0.0', '0.2', '0.4', '0.6', '0.8', '0.85']);
+}, 10);
