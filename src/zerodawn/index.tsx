@@ -1,7 +1,7 @@
 /**
  * Main game files.
  */
-import {Upgrade, upgrades} from './upgrades.js';
+import {Upgrade, upgrades, MAX_LAND} from './upgrades.js';
 import {machines, tasks, Machine, cauldronUnlocks} from './machines.js';
 import {Tutorial} from './tutorial.js';
 
@@ -60,6 +60,8 @@ export const GameData = new class {
         // [machine, cauldron to, start date, total amount, cauldronFrom, resolver?]
         transports: [] as [string, Cauldron, number, number, string][],
         currentBuff: null as {machine: string, time: number, count: number} | null,
+        humans: 0,
+        villages: [] as number[],
     }
 
     getState(): typeof GameData.DEFAULT_STATE {
@@ -369,6 +371,27 @@ export class App extends React.Component {
         for (const u of (this.state.upgrades ||= [])) {
             const upgrade = upgrades.find(z => z.name === u);
             upgrade?.onLoop?.(state, GameData, this);
+        }
+
+        if (this.state.humans) {
+            const deathRate = 20 / 1000;
+            const birthRate = 27 / 1000;
+            for (let [i, pop] of this.state.villages.entries()) {
+                pop -= Math.round(Math.random() * (((pop * deathRate) + landUsed)));
+                pop += Math.round(Math.random() * ((pop * birthRate) + totalRestored));
+
+                if (Math.random() > 0.99 && pop > 50) {
+                    this.state.villages.push(Math.round(pop / 2));
+                    pop = Math.floor(pop / 2);
+                }
+            
+                if (pop <= 0) {
+                    this.state.villages.splice(i, 1);
+                } else {
+                    this.state.villages[i] = pop;
+                }
+            }
+            this.state.humans = this.state.villages.reduce((a, b) => a + b);
         }
 
         this.state.lastTickConsumption = {
@@ -904,7 +927,13 @@ export class App extends React.Component {
             Power reserves: {this.state.power.toFixed(2)}GW<br />
             Unallocated material reserves: {this.state.materials.toFixed(2)}T<br />
             Total material reserves: {this.state.totalAvailableMaterials.toFixed(2)}T<br />
-            Land terraformed: {this.state.landRestored.toFixed(2)} KM^2 
+            Land terraformed: {this.state.landRestored.toFixed(2)} KM^2
+            {this.state.humans ?
+                <>
+                    <br />World population: {this.state.humans}<br />
+                    Total settlements: {this.state.villages.length}
+                </> : <></>
+            }
         </>
     }
 

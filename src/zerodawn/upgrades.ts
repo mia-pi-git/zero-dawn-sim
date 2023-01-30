@@ -5,6 +5,7 @@ import type {State} from './index';
 
 type Data = typeof import('./index').GameData;
 
+export const MAX_LAND = 148940000;
 export interface Upgrade {
     name: string;
     desc: string;
@@ -76,5 +77,16 @@ export const upgrades: Upgrade[] = [
         onPurchase: state => {
             state.landUseRate = 2.45;
         },
+    },
+
+    {
+        name: "Humans!",
+        desc: "Open the Cradles, and release humanity back into the world.",
+        canPurchase: state => state.landRestored >= MAX_LAND,
+        shouldDisplay: state => state.landRestored >= 100000000,
+        onPurchase: state => {
+            state.villages = new Array(9).fill(500);
+            state.humans = 9 * 500;
+        }
     },
 ];
