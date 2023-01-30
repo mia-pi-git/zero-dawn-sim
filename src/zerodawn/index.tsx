@@ -282,6 +282,10 @@ export class App extends React.Component {
         let totalMaterials = 0;
         let landUsed = 0;
         let spentPower = 0;
+        if (this.state.landRestored >= MAX_LAND) {
+            // decay instead at a random rate 
+            this.state.landRestored -= Math.random() * 50_000;
+        }
         if (this.state.upgrades?.includes("Solar Arrays")) {
             const gain = this.state.cauldrons.length;
             this.state.power += gain;

@@ -118,7 +118,11 @@ export const upgrades: Upgrade[] = [
 
     {
         name: "Humans!",
-        desc: "Open the Cradles, and release humanity back into the world.",
+        desc: (
+            "You've fully terraformed the Earth! " + 
+            "Open the Cradles, and release humanity back into the world. " + 
+            "Note that terraformed land will start to decay if not maintained."
+        ),
         canPurchase: state => state.landRestored >= MAX_LAND,
         shouldDisplay: state => state.landRestored >= 100000000,
         onPurchase: state => {
