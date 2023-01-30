@@ -216,11 +216,11 @@ export class App extends React.Component {
         Manager.use(this);
     }
 
-    canPurchase(machine: string) {
+    canPurchase(machine: string, amount = 1) {
         const {cost} = GameData.MACHINES[machine];
         return (
-            this.state.power >= cost.energy && 
-            this.findAvailableCauldron(cost.materials)
+            this.state.power >= (cost.energy * amount) && 
+            this.cauldronCapacityFor(cost.materials, amount)
         );
     }
 
@@ -230,7 +230,17 @@ export class App extends React.Component {
         ));
     }
 
-    tryPurchase(machine: string) {
+    cauldronCapacityFor(materials: number, amount = 1) {
+        let openMaterials = 0;
+        let openSpaces = 0;
+        for (const cauldron of state.cauldrons) {
+            openSpaces += (cauldron.capacity - (cauldron.busy || []).length);
+            openMaterials += cauldron.materials
+        }
+        return openMaterials >= (materials * amount) && openSpaces >= amount;
+    }
+
+    tryPurchaseOne(machine: string) {
         if (!this.canPurchase(machine)) return false;
         const cost = GameData.MACHINES[machine].cost;
         const cauldron = this.findAvailableCauldron(cost.materials);
@@ -241,6 +251,12 @@ export class App extends React.Component {
         const now = Date.now();
         (cauldron.busy ||= []).push([machine, now]);
         this.forceUpdate();
+    }
+
+    tryPurchase(machine: string, count = 1) {
+        for (let i = 0; i < count; i++) {
+            if (!this.tryPurchaseOne(machine)) return false;
+        }
     }
 
     calculateBuff() {
@@ -434,6 +450,14 @@ export class App extends React.Component {
                 disabled={!this.canPurchase(k)} 
                 onClick={() => this.tryPurchase(k)}
             >+</button><Space />
+            <button 
+                disabled={!this.canPurchase(k, 10)} 
+                onClick={() => this.tryPurchase(k, 10)}
+            >+10</button><Space />
+            <button 
+                disabled={!this.canPurchase(k, 100)} 
+                onClick={() => this.tryPurchase(k, 100)}
+            >+100</button><Space />
             <button
                 disabled={!this.canBreakDown(k)}
                 onClick={() => this.tryBreakDown(k)}
