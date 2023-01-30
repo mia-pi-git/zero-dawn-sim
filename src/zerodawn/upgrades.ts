@@ -80,6 +80,31 @@ export const upgrades: Upgrade[] = [
     },
 
     {
+        name: "Faster Cauldrons",
+        desc: "Reduce machine creation time by 10%.",
+        price: {materials: 500, energy: 500, showDiff: 150},
+        onStartup: (state, data) => {
+            for (const k in data.MACHINES) {
+                const m = data.MACHINES[k];
+                m.creationTime -= (0.10 * m.creationTime);
+            }
+        },
+    },
+
+    {
+        name: "Faster Cauldrons+",
+        desc: "Reduce machine creation time by 10%.",
+        price: {materials: 1500, energy: 1500, showDiff: 150},
+        requires: ['Faster Cauldrons'],
+        onStartup: (state, data) => {
+            for (const k in data.MACHINES) {
+                const m = data.MACHINES[k];
+                m.creationTime -= (0.10 * m.creationTime);
+            }
+        },
+    },
+
+    {
         name: "Humans!",
         desc: "Open the Cradles, and release humanity back into the world.",
         canPurchase: state => state.landRestored >= MAX_LAND,
