@@ -7,6 +7,11 @@
     <link rel="icon" href="{{site_base}}/favicon.ico" type="image/x-icon" />
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{url}}">
+    <meta property="og:title" content="{{title}}">
+    <meta property="og:description" content="{{description}}">
+    <meta property="og:image" content="{{site_base}}/favicon-32x32.png">
     <!-- other text-shadow option: `#79AAD9 1px 0 10px;`-->
     <style>
         .infobox {
@@ -27,9 +32,20 @@
             font-family: Courier New;
             font-size: 13px;
         }
-        .number {
+        .value-wrap {
             text-shadow: 1px 1px 2px #86B1E0, 0 0 1em #6D98CA, 0 0 0.4em #6D78C0;
             color: #90BEF1;
+        }
+
+        button {
+            border-radius: 10px;
+            background-color: #C7EDFE;
+            font-family: Courier New;
+        }
+
+        button:disabled {
+            border: 1px solid #E684D4;
+            background-color: #E684D4;
         }
     </style>
     <meta name="description" content="{{description}}">

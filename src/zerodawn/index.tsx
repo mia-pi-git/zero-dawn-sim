@@ -103,7 +103,7 @@ function renderAsTable(els: React.ReactElement[]) {
     const out = [];
     if (isMobile()) {
         return <table width={"100%"}>{
-            els.map(el => <tr><td className="infobox" width={"25%"}>{el}</td></tr>)
+            join(els.map(el => <tr><td className="infobox" width={"25%"}>{el}</td></tr>), <br />)
         }</table>
     } else {
         let curEl = [];
@@ -161,7 +161,7 @@ export class Space extends React.Component {
 
 export class Value extends React.Component<{children: any}> {
     render() {
-        return <span className="number">{this.props.children}</span>
+        return <strong className="value-wrap">{this.props.children}</strong>
     }
 }
 
@@ -876,7 +876,7 @@ export class App extends React.Component {
         const upgradeBuf = sortBy(upgradesAvailable, z => (z.price ? -(z.price.energy + z.price.materials) : Infinity))
             .map(z => this.renderUpgrade(z));
         return <>
-            Upgrades: (click to purchase) <br />
+            Upgrades: (click to purchase) <br /><br />
             {upgradesAvailable.length ? upgradeBuf : "None."}
         </>;
     }
@@ -1019,9 +1019,9 @@ export class App extends React.Component {
                 <button>
                     Version: 0.2
                     <Space />|<Space />
-                    <a href="https://github.com/mia-pi-git/zero-dawn-sim">Source code</a>
+                    <a target="_blank" href="https://github.com/mia-pi-git/zero-dawn-sim">Source code</a>
                     <Space />|<Space />
-                    <a href="https://www.tumblr.com/mia-is-pi">Contact site owner</a>
+                    <a target="_blank" href="https://www.tumblr.com/mia-is-pi">Contact site owner</a>
                 </button>
             </div>
         </>;

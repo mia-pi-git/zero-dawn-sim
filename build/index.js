@@ -12,6 +12,7 @@ const TARGETS = [
             title: 'Swarm',
             header: "Defeat Operation: Enduring Victory!",
             description: "Take control of the Faro Plague and exterminate humanity!",
+            url: "https://horizon.miapi.dev/swarm",
         },
     },
     {
@@ -20,6 +21,7 @@ const TARGETS = [
             title: 'Zero Dawn',
             header: "Rebuild the Earth!",
             description: "Restore the Earth after the decimation from the Faro Plague!",
+            url: "https://horizon.miapi.dev/zerodawn",
         },
     },
 ];
@@ -55,9 +57,9 @@ for (const target of TARGETS) {
     let out = template;
     replace.version = hash;
     for (const k in replace) {
-        out = out.replace(`{{${k}}}`, replace[k]);
+        out = out.replaceAll(`{{${k}}}`, replace[k]);
     }
-    out = out.replace(/\{\{site_base\}\}/g, 'https://horizon.miapi.dev/assets');
+    out = out.replaceAll('{{site_base}}', 'https://horizon.miapi.dev/assets');
 
     fs.writeFileSync(dir + '/index.html', out);
 
