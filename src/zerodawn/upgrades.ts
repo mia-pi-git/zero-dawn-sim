@@ -52,12 +52,24 @@ export const upgrades: Upgrade[] = [
         name: "Cauldron Capacity+++",
         desc: "Allow each Cauldron to make four machines at a time.",
         price: {materials: 1000, energy: 1000, showDiff: 100},
-        requires: ['Cauldron Capacity+'],
+        requires: ['Cauldron Capacity++'],
         onPurchase: state => {
             for (const c of state.cauldrons) {
                 c.capacity = 4;
             }
             state.newCauldronCapacity = 4;
+        },
+    },
+    {
+        name: "Cauldron Capacity++++",
+        desc: "Allow each Cauldron to make five machines at a time.",
+        price: {materials: 1000, energy: 1000, showDiff: 100},
+        requires: ['Cauldron Capacity+++'],
+        onPurchase: state => {
+            for (const c of state.cauldrons) {
+                c.capacity = 5;
+            }
+            state.newCauldronCapacity = 5;
         },
     },
 

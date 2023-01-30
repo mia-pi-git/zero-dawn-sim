@@ -241,16 +241,17 @@ export class App extends React.Component {
     }
 
     tryPurchaseOne(machine: string) {
-        if (!this.canPurchase(machine)) return false;
+        if (!this.canPurchase(machine, 1)) return false;
         const cost = GameData.MACHINES[machine].cost;
         const cauldron = this.findAvailableCauldron(cost.materials);
-        if (!cauldron) return false;
+        if (!cauldron) return false
         this.state.power -= cost.energy;
         cauldron.materials -= cost.materials;
         this.state.totalAvailableMaterials -= cost.materials;
         const now = Date.now();
         (cauldron.busy ||= []).push([machine, now]);
         this.forceUpdate();
+        return true;
     }
 
     tryPurchase(machine: string, count = 1) {
