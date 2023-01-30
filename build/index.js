@@ -57,6 +57,7 @@ for (const target of TARGETS) {
     for (const k in replace) {
         out = out.replace(`{{${k}}}`, replace[k]);
     }
+    out = out.replace(/\{\{site_base\}\}/g, 'https://horizon.miapi.dev/assets');
 
     fs.writeFileSync(dir + '/index.html', out);
 

@@ -380,7 +380,7 @@ export class App extends React.Component {
                 pop -= Math.round(Math.random() * (((pop * deathRate) + landUsed)));
                 pop += Math.round(Math.random() * ((pop * birthRate) + totalRestored));
 
-                if (Math.random() > 0.99 && pop > 50) {
+                if (Math.random() > 0.995 && pop > 50) {
                     this.state.villages.push(Math.round(pop / 2));
                     pop = Math.floor(pop / 2);
                 }
@@ -871,7 +871,7 @@ export class App extends React.Component {
         if (machine) {
             const data = GameData.MACHINES[machine];
             return <>
-                Search machine data:<br />
+                Search machine data: <small>(type in a machine name to get its stats)</small><br />
                 <input onKeyDown={(ev) => this.handleSearchEvent(ev)} /><br />
                 <strong>{data.name}:</strong><br />
                 Power consumption: {data.powerConsumption}/sec<br />
