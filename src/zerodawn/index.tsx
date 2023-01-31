@@ -57,7 +57,7 @@ export const GameData = new class {
         currentOpenCauldron: 'Alpha',
         currentOpenMachineType: 'acquisition',
         currentMaterialInputValue: null as null | string,
-        // [machine, cauldron to, start date, total amount, cauldronFrom, resolver?]
+        /** [machine, cauldron to, start date, total amount, cauldronFrom]*/
         transports: [] as [string, Cauldron, number, number, string][],
         currentBuff: null as {machine: string, time: number, count: number} | null,
         humans: 0,
@@ -731,7 +731,7 @@ export class App extends React.Component {
             z[1] + (GameData.MACHINES[z[0]].creationTime * 1000)
         );
         return <>
-            {z[0]} ({this.makeProgressBar(z[1], creationCompletion)})
+            <Value>{upper(z[0])}</Value> ({this.makeProgressBar(z[1], creationCompletion)})
         </>;
     }
 

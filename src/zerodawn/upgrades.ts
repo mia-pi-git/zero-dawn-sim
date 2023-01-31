@@ -126,9 +126,19 @@ export const upgrades: Upgrade[] = [
                 .some(z => data.MACHINES[z].type === 'transport')
         ),
         onLoop: (state, data, app) => {
+            const num = state.upgrades?.includes('Top it Off++') ? 
+                1000 : state.upgrades?.includes('Top it Off+') ? 500 : 
+                100;
             for (const c of state.cauldrons) {
-                if (c.materials < 100) {
-                    if (app.batchTransfer(100, c) === null) {
+                const transportsTo = state.transports.filter(
+                    ([, cauldron]) => cauldron.name === c.name
+                );
+                let numMaterials = c.materials;
+                for (const c of transportsTo) {
+                    numMaterials += c[3];
+                }
+                if (numMaterials < num) {
+                    if (app.batchTransfer(num - numMaterials, c, true) === null) {
                         return;
                     }
                 }
@@ -145,15 +155,6 @@ export const upgrades: Upgrade[] = [
                 .filter(z => state.machines[z])
                 .some(z => data.MACHINES[z].type === 'transport')
         ),
-        onLoop: (state, data, app) => {
-            for (const c of state.cauldrons) {
-                if (c.materials < 500) {
-                    if (app.batchTransfer(500, c) === null) {
-                        return;
-                    }
-                }
-            }
-        },
     },
     {
         name: "Top it Off++",
@@ -165,15 +166,6 @@ export const upgrades: Upgrade[] = [
                 .filter(z => state.machines[z])
                 .some(z => data.MACHINES[z].type === 'transport')
         ),
-        onLoop: (state, data, app) => {
-            for (const c of state.cauldrons) {
-                if (c.materials < 1000) {
-                    if (app.batchTransfer(1000, c) === null) {
-                        return;
-                    }
-                }
-            }
-        },
     },
 
     {
